@@ -1,0 +1,115 @@
+{% extends 'base_student.html' %}
+
+{% block content %}
+<style>
+    .container {
+        margin: 20px -90px;
+        width: 80%;
+    }
+
+    /* Align the entire dashboard card to the left */
+    .dashboard-card {
+        float: left; /* Aligns the div to the left */
+        width: 100%; /* Ensures it takes up the full container width */
+        margin-top: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .dashboard-header {
+        background-color: #007bff;
+        color: #fff;
+        text-align: center; /* Aligns text within the div to the left */
+        padding: 15px;
+        font-size: 1.5em;
+        font-weight: bold;
+    }
+
+    .dashboard-body {
+        text-align: left; /* Aligns all content inside to the left */
+        padding: 20px;
+    }
+
+    /* Form Styles */
+    .form-label {
+        font-weight: bold;
+    }
+
+    .form-control {
+        border-radius: 5px;
+        border: 1px solid #ced4da;
+        padding: 10px;
+        font-size: 1em;
+    }
+
+    .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        border: none;
+        padding: 10px 20px;
+        font-size: 1em;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+    }
+</style>
+
+<div class="container">
+    <div class="dashboard-card">
+        <div class="dashboard-header">
+            Student Dashboard
+        </div>
+        <div class="dashboard-body">
+            {% if application %}
+                <h3 class="text-secondary">Your Current TC Application</h3>
+                <p><strong>Name:</strong> {{ application.name }}</p>
+                <p><strong>Roll Number:</strong> {{ application.roll_number }}</p>
+                <p><strong>Department:</strong> {{ application.department }}</p>
+                <p><strong>Reason:</strong> {{ application.reason }}</p>
+                <p><strong>Status:</strong> 
+                    <span class="badge 
+                        {% if application.status == 'approved' %} bg-success 
+                        {% elif application.status == 'rejected' %} bg-danger 
+                        {% elif application.status == 'pending' %} bg-warning text-dark 
+                        {% else %} bg-secondary {% endif %}">
+                        {{ application.status|title }}
+                    </span>
+                </p>
+            {% else %}
+                <h3 class="text-secondary">Apply for a Transfer Certificate</h3>
+                <form method="POST" class="mt-4">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name:</label>
+                        <input type="text" id="name" name="name" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="roll_number" class="form-label">Roll Number:</label>
+                        <input type="text" id="roll_number" name="roll_number" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="department" class="form-label">Department:</label>
+                        <input type="text" id="department" name="department" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="reason" class="form-label">Reason:</label>
+                        <textarea id="reason" name="reason" class="form-control" rows="4" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit Application</button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+

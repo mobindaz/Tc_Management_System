@@ -1,0 +1,174 @@
+{% extends 'base_student.html' %}
+
+{% block content %}
+<style>
+    .container {
+        max-width: 800px;
+        margin: 20px -200px;
+        background: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        font-family: Arial, sans-serif;
+        text-align: left;
+    }
+
+    h1 {
+        text-align: center;
+        color: #333;
+        margin-bottom: 20px;
+    }
+
+    h3 {
+        color: #555;
+        margin-bottom: 15px;
+        text-align: left;
+    }
+
+    .departments {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: flex-start;
+    }
+
+    .role-box {
+        background: #fff;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 15px;
+        flex: 1 1 calc(33.33% - 20px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        text-align: left;
+        min-width: 250px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .role-box:hover {
+        background-color: #f1f1f1;
+    }
+
+    .role-box h5 {
+        font-size: 16px;
+        color: #444;
+        margin-bottom: 5px;
+    }
+
+    .role-box p.status {
+        display: none; /* Initially hidden */
+        margin: 5px 0;
+        font-size: 14px;
+    }
+
+    .role-box.active p.status {
+        display: block; /* Show when active */
+    }
+
+    .green {
+        color: #4caf50;
+        font-weight: bold;
+    }
+
+    .red {
+        color: #f44336;
+        font-weight: bold;
+    }
+
+    .yellow {
+        color: #ffc107;
+        font-weight: bold;
+    }
+
+    .btn-success {
+        display: inline-block;
+        text-decoration: none;
+        color: #fff;
+        background-color: #28a745;
+        border: none;
+        padding: 10px 15px;
+        font-size: 16px;
+        border-radius: 5px;
+        margin-top: 20px;
+        text-align: center;
+        transition: background-color 0.3s;
+    }
+
+    .btn-success:hover {
+        background-color: #218838;
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+    .text-danger {
+        color: #dc3545;
+        font-weight: bold;
+        margin-top: 20px;
+    }
+
+    .text-warning {
+        color: #ffc107;
+        font-weight: bold;
+        margin-top: 20px;
+    }
+
+    .text-info {
+        color: #17a2b8;
+        font-weight: bold;
+        margin-top: 20px;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const roleBoxes = document.querySelectorAll('.role-box');
+
+        roleBoxes.forEach(box => {
+            box.addEventListener('click', () => {
+                // Toggle the active class
+                box.classList.toggle('active');
+            });
+        });
+    });
+</script>
+
+<div class="container">
+    <h1>TC Status</h1>
+
+    {% if application %}
+        <h3>Status Flow</h3>
+        <div class="departments">
+            {% for role in roles %}
+                <div class="role-box">
+                    <h5>{{ role.name }} ({{ role.user }})</h5>
+                    <p class="status">
+                        Status: 
+                        <span class="{% if role.status == 'approved' %}green{% elif role.status == 'rejected' %}red{% else %}yellow{% endif %}">
+                            {{ role.status }}
+                        </span>
+                        {% if role.status == 'due' %}
+                            <br>Reason: {{ application.due_reason }}
+                        {% endif %}
+                    </p>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if application.status == 'approved' %}
+            <a href="{% url 'tc_download' application.id %}" class="btn btn-success">Download TC</a>
+        {% elif application.status == 'rejected' %}
+            <p class="text-danger">Your application has been rejected.</p>
+        {% elif application.status == 'due' %}
+            <p class="text-warning">Marked as Due: {{ application.due_reason }}</p>
+        {% else %}
+            <p class="text-info">{{ approved_count }} roles approved, others are remaining.</p>
+        {% endif %}
+
+    {% else %}
+        <p class="text-center">No TC application found.</p>
+    {% endif %}
+</div>
+{% endblock %}

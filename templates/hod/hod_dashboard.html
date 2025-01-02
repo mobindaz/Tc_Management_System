@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}HOD Dashboard{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <h1 class="text-center">Welcome to the HOD Dashboard</h1>
+</div>
+<div class="container">
+    <div class="row">
+        <div class="col-lg-4 col-6">
+            <div class="small-box bg-info">
+                <div class="inner">
+                    <h3>{{ pending_count }}</h3>
+                    <p>Pending Applications</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <a href="{% url 'pending_applications' 'hod' %}" class="small-box-footer">
+                    View Details <i class="fas fa-arrow-circle-right"></i>
+                </a>
+            </div>
+        </div>
+        <div class="col-lg-4 col-6">
+            <div class="small-box bg-success">
+                <div class="inner">
+                    <h3>{{ approved_count }}</h3>
+                    <p>Approved Applications</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <a href="{% url 'approved_list' 'hod' %}" class="small-box-footer">
+                    View Details <i class="fas fa-arrow-circle-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+
+
+<!-- }
+
+{}
+<h2>HOD Dashboard</h2>
+<h3>Pending Applications</h3>
+<ul>
+    {% for application in pending_applications %}
+    <li>
+        {{ application.name }} - {{ application.status }}
+        <a href="{% url 'handle_tc_application' application.id 'approve' %}" class="btn btn-success">Approve</a>
+        <a href="{% url 'handle_tc_application' application.id 'reject' %}" class="btn btn-danger">Reject</a>
+    </li>
+    {% endfor %}
+</ul>
+
+<h3>Approved Applications</h3>
+<ul>
+    {% for application in hod_approved_applications %}
+    <li>{{ application.name }} - {{ application.status }}</li>
+    {% endfor %}
+</ul>
+ -->
+
+

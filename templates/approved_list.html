@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Approved List{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <h1 class="text-center">{{ role }}'s Approved Applications</h1>
+</div>
+<div class="container">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Application ID</th>
+                <th>Name</th>
+                <th>Department</th>
+                <th>PRN</th>
+                <th>Approval Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for application in approved_applications %}
+                <tr>
+                    <td>{{ application.id }}</td>
+                    <td>{{ application.name }}</td>
+                    <td>{{ application.department }}</td>
+                    <td>{{ application.prn }}</td>
+                    <td>{{ application.updated_at }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center">No approved applications found.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,8 @@
+{% extends 'base_student.html' %}
+
+{% block content %}
+<div class="alert alert-success" role="alert">
+    <h4 class="alert-heading">Application Submitted Successfully!</h4>
+    <p>Your Transfer Certificate application has been submitted. You can check the status on your <a href="{% url 'user_dashboard' %}">dashboard</a>.</p>
+</div>
+{% endblock %}

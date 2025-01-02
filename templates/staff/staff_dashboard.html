@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Staff Dashboard{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <h1 class="text-center">Welcome to the Staff Dashboard</h1>
+</div>
+<div class="container">
+    <div class="row">
+        <div class="col-lg-4 col-6">
+            <div class="small-box bg-info">
+                <div class="inner">
+                    <h3>{{ pending_count }}</h3>
+                    <p>Pending Applications</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <a href="{% url 'pending_applications' 'staff' %}" class="small-box-footer">
+                    View Details <i class="fas fa-arrow-circle-right"></i>
+                </a>
+            </div>
+        </div>
+        <div class="col-lg-4 col-6">
+            <div class="small-box bg-success">
+                <div class="inner">
+                    <h3>{{ approved_count }}</h3>
+                    <p>Approved Applications</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <a href="{% url 'approved_list' 'staff' %}" class="small-box-footer">
+                    View Details <i class="fas fa-arrow-circle-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+
+
+
+<!-- }
+
+{% }
+<div class="container">
+    <h1>Staff Dashboard</h1>
+    <p>Welcome, {{ user.username }}!</p>
+
+    <h2>Pending TC Applications</h2>
+
+    {% if pending_applications %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Roll Number</th>
+                    <th>Department</th>
+                    <th>Reason</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for application in pending_applications %}
+                <tr>
+                    <td>{{ application.name }}</td>
+                    <td>{{ application.roll_number }}</td>
+                    <td>{{ application.department }}</td>
+                    <td>{{ application.reason }}</td>
+                    <td>
+                       
+                        <form method="post" action="{% url 'handle_tc_application' application.id 'approve' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success">Approve</button>
+                        </form>
+
+                        
+                        <form method="post" action="{% url 'handle_tc_application' application.id 'reject' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">Reject</button>
+                        </form>
+
+                     
+                        <form method="post" action="{% url 'handle_tc_application' application.id 'due' %}">
+                            {% csrf_token %}
+                            <input type="text" name="due_reason" placeholder="Reason for due" required>
+                            <button type="submit" class="btn btn-warning">Mark as Due</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No pending applications.</p>
+    {% endif %}
+</div>
+{% } -->

@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit User{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Edit User - {{ user.username }}</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="first_name">First Name</label>
+            <input type="text" id="first_name" name="first_name" class="form-control" value="{{ user.first_name }}">
+        </div>
+        <div class="form-group">
+            <label for="last_name">Last Name</label>
+            <input type="text" id="last_name" name="last_name" class="form-control" value="{{ user.last_name }}">
+        </div>
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" class="form-control" value="{{ user.email }}">
+        </div>
+        <div class="form-check">
+            <input type="checkbox" id="is_staff" name="is_staff" class="form-check-input" {% if user.is_staff %}checked{% endif %}>
+            <label for="is_staff" class="form-check-label">Is Staff</label>
+        </div>
+        <div class="form-check">
+            <input type="checkbox" id="is_active" name="is_active" class="form-check-input" {% if user.is_active %}checked{% endif %}>
+            <label for="is_active" class="form-check-label">Is Active</label>
+        </div>
+        <button type="submit" class="btn btn-success">Save Changes</button>
+    </form>
+</div>
+{% endblock %}

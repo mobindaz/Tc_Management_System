@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Mark Application as Due</h2>
+    <form method="post" action="{% url 'mark_as_due' application.id %}">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="due_reason">Select Due Reason:</label>
+            <select id="due_reason" name="due_reason" class="form-control" required>
+                {% for reason in due_reasons %}
+                    <option value="{{ reason }}">{{ reason }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-danger mt-3">Save</button>
+    </form>
+</div>
+{% endblock %}

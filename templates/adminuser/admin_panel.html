@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <!-- Navigation Bar with Dropdown -->
+                <h2>Admin Panel</h2>
+
+                <!-- Display success or error messages -->
+                {% if messages %}
+                    <div id="message-box">
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <!-- Form for uploading CSV -->
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="csv_file">Upload CSV File:</label>
+                        <input type="file" name="csv_file" class="form-control" id="csv_file" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Upload Users</button>
+                </form>
+
+                <hr />
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        // Auto-remove messages after 5 seconds
+        setTimeout(function() {
+            var messageBox = document.getElementById('message-box');
+            if (messageBox) {
+                messageBox.style.display = 'none';
+            }
+        }, 5000);
+    </script>
+{% endblock %}

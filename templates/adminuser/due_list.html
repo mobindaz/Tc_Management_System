@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Due Applications</h2>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Roll Number</th>
+                <th>Department</th>
+                <th>PRN</th>
+                <th>Due Reason</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for application in applications_due %}
+                <tr>
+                    <td>{{ application.name }}</td>
+                    <td>{{ application.roll_number }}</td>
+                    <td>{{ application.department }}</td>
+                    <td>{{ application.prn }}</td>
+                    <td>{{ application.due_reason }}</td>
+                    <td>
+                        <!-- Optionally, add actions for these applications -->
+                        <a href="{% url 'approve_tc_action' application.id %}?next=due_list" class="btn btn-success btn-sm">Approve</a>
+                        <a href="{% url 'reject_tc_action' application.id %}" class="btn btn-danger btn-sm">Reject</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
