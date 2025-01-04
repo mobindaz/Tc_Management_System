@@ -1,7 +1,8 @@
 from django.conf import settings
 from django.db import models
 from django.core.exceptions import ValidationError
-
+from django.utils.timezone import now
+from datetime import timedelta
 
 
 class TCApplication(models.Model):
@@ -23,7 +24,7 @@ class TCApplication(models.Model):
 
     name = models.CharField(max_length=100)
     roll_number = models.CharField(max_length=20)
-    department = models.CharField(choices=DEPARTMENT_CHOICES, max_length=50)
+    department = models.CharField(choices=DEPARTMENT_CHOICES, max_length=50, null=True, blank=True)
     prn = models.CharField(max_length=20, unique=True)
     reason = models.TextField()
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
@@ -32,19 +33,12 @@ class TCApplication(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     is_uploaded_due = models.BooleanField(default=False)
 
-    # Add method to move applications to main due list
-    def add_to_due_list(self, user, due_reason='', is_uploaded_due=False):
-        self.due_list.add(user)
-        self.due_reason = due_reason
-        self.is_uploaded_due = is_uploaded_due
-        self.save()
-
+    # Relations for approval workflow
     due_users = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
         related_name="due_applications",
         blank=True,
     )
-    # Track users involved in the approval process
     pending_approval = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
         related_name="tc_pending_approvals",
@@ -70,6 +64,9 @@ class TCApplication(models.Model):
         help_text="Users who have flagged this application as due."
     )
 
+    # Auto-approval time (add a field to store deadline)
+   
+
     def clean(self):
         """
         Ensure due reason is provided when the status is 'due'.
@@ -83,19 +80,20 @@ class TCApplication(models.Model):
         """
         return not self.pending_approval.exists()
 
-    def approve(self, user):
+    def approve(self, user=None, auto=False):
         """
-        Mark application as approved by the given user.
+        Mark application as approved.
         """
-        if user in self.pending_approval.all():
+        if auto:
+            self.status = 'approved'
+        elif user and user in self.pending_approval.all():
             self.approved_by.add(user)
             self.pending_approval.remove(user)
-            # Update status if all approvals are complete
             if self.is_fully_approved():
                 self.status = 'approved'
-            self.save()
         else:
             raise ValidationError("You are not authorized to approve this application.")
+        self.save()
 
     def reject(self, user):
         """
@@ -109,15 +107,13 @@ class TCApplication(models.Model):
         else:
             raise ValidationError("You are not authorized to reject this application.")
 
-    def add_to_due_list(self, user, due_reason=None):
-        """
-        Add a user to the due list and update the status to 'due'.
-        """
+    def add_to_due_list(self, user, due_reason, is_uploaded_due=False):
+        self.status = "Due"
+        self.due_reason = due_reason
+        self.is_uploaded_due = is_uploaded_due
         self.due_list.add(user)
-        self.status = 'due'
-        if due_reason:
-            self.due_reason = due_reason
         self.save()
+
 
     def __str__(self):
         return f"{self.name} ({self.get_department_display()}) - {self.status}"
@@ -126,3 +122,22 @@ class TCApplication(models.Model):
         verbose_name = "Transfer Certificate Application"
         verbose_name_plural = "Transfer Certificate Applications"
         ordering = ['-updated_at']
+
+
+class UploadedDueList(models.Model):
+    name = models.CharField(max_length=100, null=True, blank=True)
+    department = models.CharField(max_length=100, blank=True, null=True)
+    prn = models.CharField(max_length=20, unique=True)
+    due_reason = models.TextField(default="No reason provided")
+    added_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE, 
+        related_name="uploaded_due_lists",
+        null=True,  
+        blank=True
+    )
+
+
+    def __str__(self):
+        return f"{self.prn} - {self.due_reason}"
+

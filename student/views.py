@@ -1,33 +1,38 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from student.models import TCApplication
+from student.models import TCApplication, UploadedDueList
 from django.http import HttpResponseForbidden, FileResponse
 from io import BytesIO
 from reportlab.pdfgen import canvas
 from adminuser.models import CustomUser
 
+from django.shortcuts import get_object_or_404
+
 @login_required
 def user_dashboard(request):
+    """
+    Student dashboard to apply for a Transfer Certificate (TC).
+    Shows status if an application already exists.
+    """
     if request.user.role != 'student':
         return HttpResponseForbidden("You are not authorized to access the student dashboard.")
-    
-    # Fetch the student's TC application
-    application = TCApplication.objects.filter(prn=request.user.username).first()
 
-    # Handle TC application submission
+    # Fetch the student's existing TC application
+    application = TCApplication.objects.filter(prn=request.user.prn).first()
+
+    if application:
+        # If an application already exists, redirect to the application status page
+        return redirect('application_status')
+
     if request.method == 'POST':
-        # Check if the student already has an active application
-        if application:
-            return redirect('user_dashboard')  # Redirect to dashboard if application exists
-
         # Fetch data from the POST request
         name = request.POST.get('name')
         roll_number = request.POST.get('roll_number')
-        department = request.POST.get('department')
-        prn = request.user.username  # Use the logged-in user's PRN
+        department = request.user.department  # Automatically fetch department from the user's profile
+        prn = request.user.prn  # Use the logged-in user's PRN
         reason = request.POST.get('reason')
 
-        # Create a TC application
+        # Create a new TC application
         application = TCApplication.objects.create(
             name=name,
             roll_number=roll_number,
@@ -37,78 +42,93 @@ def user_dashboard(request):
             status='pending'
         )
 
-        # Attach all non-student users to the application
-        reviewers = CustomUser.objects.exclude(role='student')
-        application.pending_approval.add(*reviewers)
+        # Assign reviewers based on the department
+        department_reviewers = CustomUser.objects.filter(
+            role__in=['hod', 'tutor', 'staff'], department=department
+        )
+        general_reviewers = CustomUser.objects.filter(
+            role__in=['admin', 'nss', 'ncc', 'lab', 'hostel', 'library', 'academics']
+        )
+
+        # Add reviewers to the application's pending approval list
+        application.pending_approval.add(*department_reviewers, *general_reviewers)
         application.save()
 
-        return redirect('success_message')  # Redirect to the success page
+        return redirect('application_status')  # Redirect to the application status page
 
-    context = {
-        'application': application
-    }
-    return render(request, 'student/user_dashboard.html', context)
+    return render(request, 'student/user_dashboard.html')
+
+
+@login_required
+def application_status(request):
+    """
+    View to show the status of a student's TC application.
+    """
+    if request.user.role != 'student':
+        return HttpResponseForbidden("You are not authorized to access the application status page.")
+
+    # Fetch the student's TC application
+    application = get_object_or_404(TCApplication, prn=request.user.prn)
+
+    return render(request, 'student/application_status.html', {'application': application})
 
 
 @login_required
 def tc_status(request):
-    # Check if the logged-in user is a student
+    """
+    View to display the detailed status of a student's TC application.
+    Includes role-wise status (approved, pending, due).
+    """
     if request.user.role != 'student':
         return HttpResponseForbidden("You are not authorized to access the student status page.")
 
     # Fetch the student's TC application
-    application = TCApplication.objects.filter(prn=request.user.username).first()
+    application = TCApplication.objects.filter(prn=request.user.prn).first()
 
-    # Get all roles except "student"
-    roles = CustomUser.objects.exclude(role='student')
+    # Get all relevant reviewers (departmental + general)
+    department_reviewers = CustomUser.objects.filter(
+        role__in=['hod', 'tutor', 'staff'], department=request.user.department
+    )
+    general_reviewers = CustomUser.objects.filter(
+        role__in=['admin', 'nss', 'ncc', 'lab', 'hostel', 'library', 'academics']
+    )
+    all_reviewers = department_reviewers | general_reviewers
 
-    # Initialize variables
+    # Initialize role statuses
     role_statuses = []
-    application_status = "pending"  # Default application status
+    application_status = "pending"
 
     if application:
-        # Iterate through roles to determine status for each
-        for role in roles:
-            if role in application.approved_by.all():
+        # Iterate through all reviewers to determine their statuses
+        for reviewer in all_reviewers:
+            if reviewer in application.approved_by.all():
                 status = "approved"
-            elif role in application.due_list.all():  # Check if the role marked it as due
+            elif reviewer in application.due_list.all():  # Check if marked as due
                 status = "due"
-                application_status = "due"  # Update the application status if any role marks as due
+                application_status = "due"
             else:
                 status = "pending"
 
             role_statuses.append({
-                "name": role.role.capitalize(),
-                "user": role.username,
+                "name": reviewer.get_full_name() or reviewer.username,
+                "role": reviewer.role.capitalize(),
                 "status": status,
             })
 
-        # If no "due" and all roles have approved, mark as approved
-        if application_status != "due" and len(application.approved_by.all()) == roles.count():
+        # Update the application's overall status
+        if application_status != "due" and len(application.approved_by.all()) == all_reviewers.count():
             application_status = "approved"
-
-        # Update application status and save
-        application.status = application_status
-        application.save()
-    else:
-        # Handle case where the student has no application
-        for role in roles:
-            role_statuses.append({
-                "name": role.role.capitalize(),
-                "user": role.username,
-                "status": "pending",
-            })
-
-    # Count approved roles for display
-    approved_count = len([role for role in role_statuses if role["status"] == "approved"])
+            application.status = application_status
+            application.save()
 
     context = {
         "application": application,
         "roles": role_statuses,
-        "approved_count": approved_count,
+        "application_status": application_status,
     }
 
     return render(request, "student/status.html", context)
+
 
 @login_required
 def success_message(request):

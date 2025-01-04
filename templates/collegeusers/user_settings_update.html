@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Update Settings for {{ user.username }}</h1>
+
+<form method="post">
+    {% csrf_token %}
+    <label>
+        <input type="checkbox" name="auto_approval" {% if settings.auto_approval_enabled %}checked{% endif %}>
+        Enable Auto-Approval
+    </label>
+    <button type="submit" class="btn btn-primary">Save Settings</button>
+</form>
+
+<a href="{% url 'user_settings_list' %}">Back to Settings List</a>
+{% endblock %}

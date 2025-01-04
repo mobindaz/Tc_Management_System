@@ -55,6 +55,8 @@ INSTALLED_APPS = [
     'collegeusers',
 ]
 
+
+
 LOGIN_URL = 'login'
 
 MIDDLEWARE = [

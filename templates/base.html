@@ -85,15 +85,23 @@
                 <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
             </li>
         </ul>
+    
+        <!-- Profile Dropdown -->
         <ul class="navbar-nav ml-auto">
-            <!-- Logout -->
-            <li class="nav-item">
-                <a href="{% url 'logout' %}" class="nav-link">
-                    <i class="fas fa-sign-out-alt"></i> Logout
+            <li class="nav-item dropdown profile-dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="dropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-user-circle fa-2x"></i> <!-- Larger Profile Icon -->
                 </a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuLink">
+                    <!-- Dropdown Links -->
+                    <li><a href="{% url 'view_profile' %}" class="dropdown-item"><i class="fas fa-user"></i> View Profile</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a href="{% url 'logout' %}" class="dropdown-item text-danger"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                </ul>
             </li>
         </ul>
     </nav>
+    
 
     <!-- Sidebar -->
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
@@ -134,6 +142,12 @@
                             <a href="{% url 'manage_users' %}" class="nav-link {% if request.path == '/manage-users/' %}active{% endif %}">
                                 <i class="fa fa-users"></i> &nbsp;
                                 <p>Manage Users</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'upload_due_list' %}" class="nav-link {% if request.path == '/due-list/' %}active{% endif %}">
+                                <i class="nav-icon fas fa-list"></i>
+                                <p>Upload Dues</p>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -267,6 +281,109 @@
         <p>Due List</p>
     </a>
 </li>
+
+{% elif user.role == 'hostel' %}
+    <li class="nav-item">
+        <a href="{% url 'hostel_dashboard' %}" class="nav-link">
+            <i class="nav-icon fas fa-home"></i>
+            <p>HOSTEL Dashboard</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a href="{% url 'approved_list' 'hostel' %}" class="nav-link">
+            <i class="nav-icon fas fa-check"></i>
+            <p>Approved List</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a href="{% url 'upload_due_list' %}" class="nav-link {% if request.path == '/due-list/' %}active{% endif %}">
+            <i class="nav-icon fas fa-list"></i>
+            <p>Upload Dues</p>
+        </a>
+    </li>
+    <li class="nav-item">
+    <a href="{% url 'due_list' %}" class="nav-link {% if request.path == '/due-list/' %}active{% endif %}">
+        <i class="nav-icon fas fa-list"></i>
+        <p>Due List</p>
+    </a>
+</li>
+
+{% elif user.role == 'lab' %}
+    <li class="nav-item">
+        <a href="{% url 'lab_dashboard' %}" class="nav-link">
+            <i class="nav-icon fas fa-home"></i>
+            <p>LAB Dashboard</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a href="{% url 'approved_list' 'lab' %}" class="nav-link">
+            <i class="nav-icon fas fa-check"></i>
+            <p>Approved List</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a href="{% url 'upload_due_list' %}" class="nav-link {% if request.path == '/due-list/' %}active{% endif %}">
+            <i class="nav-icon fas fa-list"></i>
+            <p>Upload Dues</p>
+        </a>
+    </li>
+    <li class="nav-item">
+    <a href="{% url 'due_list' %}" class="nav-link {% if request.path == '/due-list/' %}active{% endif %}">
+        <i class="nav-icon fas fa-list"></i>
+        <p>Due List</p>
+    </a>
+
+{% elif user.role == 'library' %}   
+    <li class="nav-item">
+        <a href="{% url 'library_dashboard' %}" class="nav-link">
+            <i class="nav-icon fas fa-home"></i>
+            <p>Library Dashboard</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a href="{% url 'approved_list' 'library' %}" class="nav-link">
+            <i class="nav-icon fas fa-check"></i>
+            <p>Approved List</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a href="{% url 'upload_due_list' %}" class="nav-link {% if request.path == '/due-list/' %}active{% endif %}">
+            <i class="nav-icon fas fa-list"></i>
+            <p>Upload Dues</p>
+        </a>
+    </li>
+    <li class="nav-item">
+    <a href="{% url 'due_list' %}" class="nav-link {% if request.path == '/due-list/' %}active{% endif %}">
+        <i class="nav-icon fas fa-list"></i>
+        <p>Due List</p>
+    </a>
+    </li>
+   {%elif user.role == 'academics' %}
+    <li class="nav-item">
+        <a href="{% url 'academics_dashboard' %}" class="nav-link">
+            <i class="nav-icon fas fa-home"></i>
+            <p>Academics Dashboard</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a href="{% url 'approved_list' 'academics' %}" class="nav-link">
+            <i class="nav-icon fas fa-check"></i>
+            <p>Approved List</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a href="{% url 'upload_due_list' %}" class="nav-link {% if request.path == '/due-list/' %}active{% endif %}">
+            <i class="nav-icon fas fa-list"></i>
+            <p>Upload Dues</p>
+        </a>
+    </li>
+    <li class="nav-item">
+    <a href="{% url 'due_list' %}" class="nav-link {% if request.path == '/due-list/' %}active{% endif %}">
+        <i class="nav-icon fas fa-list"></i>
+        <p>Due List</p>
+    </a>
+    </li>
+
 {% endif %}
                     
             </nav>

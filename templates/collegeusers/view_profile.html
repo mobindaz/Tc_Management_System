@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="profile-card">
+    <div class="profile-header">
+        <div class="profile-picture-container">
+            {% if user.profile_picture %}
+                <img src="{{ user.profile_picture.url }}" alt="Profile Picture" class="profile-picture">
+            {% else %}
+                <div class="profile-initials">
+                    {{ user.first_name|default:''|slice:":1" }}{{ user.last_name|default:''|slice:":1" }}
+                </div>
+            {% endif %}
+        </div>
+        <div class="profile-info">
+            <h2>{{ user.first_name }} {{ user.last_name }}</h2>
+            <p><strong>Username:</strong> {{ user.username }}</p>
+            <p><strong>Role:</strong> {{ user.get_role_display }}</p>
+            <p><strong>Department:</strong> {{ user.get_department_display }}</p>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+        </div>
+    </div>
+
+    <div class="profile-details">
+        <h3>Additional Information</h3>
+        <p><strong>Phone:</strong> {{ user.phone_number }}</p>
+        <p><strong>Date of Birth:</strong> {{ user.dob }}</p>
+        <p><strong>Address:</strong> {{ user.address }}</p>
+    </div>
+
+    <div class="profile-action">
+        <a href="{% url 'edit_profile' %}" class="btn btn-primary">Edit Profile</a>
+    </div>
+</div>
+
+<style>
+/* General Styles */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f5f8fa;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+h1 {
+    font-size: 2.5rem;
+    text-align: center;
+    margin-top: 40px;
+    color: #333;
+}
+
+.profile-card {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 20px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.profile-picture-container {
+    flex: 0 0 150px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    background-color: #e1e1e1;
+    padding: 10px;
+}
+
+.profile-picture {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.profile-initials {
+    font-size: 50px;
+    color: white;
+    background-color: #6c757d;
+    width: 120px;
+    height: 120px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+}
+
+.profile-info {
+    flex: 1;
+    padding-left: 20px;
+}
+
+.profile-info h2 {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    color: #007bff;
+}
+
+.profile-info p {
+    font-size: 1.1rem;
+    margin: 8px 0;
+}
+
+.profile-details {
+    margin-top: 30px;
+}
+
+.profile-details h3 {
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.profile-details p {
+    font-size: 1.1rem;
+    margin: 8px 0;
+}
+
+.profile-action {
+    margin-top: 40px;
+    text-align: center;
+}
+
+.profile-action .btn-primary {
+    background-color: #007bff;
+    color: white;
+    padding: 12px 30px;
+    font-size: 1rem;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+
+.profile-action .btn-primary:hover {
+    background-color: #0056b3;
+}
+
+/* Responsive Styling */
+@media (max-width: 768px) {
+    .profile-card {
+        padding: 20px;
+    }
+
+    .profile-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .profile-picture-container {
+        margin-bottom: 20px;
+    }
+
+    .profile-info {
+        padding-left: 0;
+    }
+
+    .profile-info h2 {
+        font-size: 1.8rem;
+    }
+}
+</style>
+{% endblock %}

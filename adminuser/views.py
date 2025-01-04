@@ -3,14 +3,32 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpResponseForbidden
 from django.db import IntegrityError
-import csv
-from student.models import TCApplication  # Adjust import path as needed
+from student.models import TCApplication, UploadedDueList  # Adjust import path as needed
 from django.contrib.auth import get_user_model
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import  get_object_or_404
+from django.http import HttpResponseForbidden, HttpResponseRedirect
+from django.urls import reverse
+import csv
+from django.core.exceptions import ValidationError
 
 
 CustomUser = get_user_model()
 
+
+DEPARTMENT_CHOICES = [
+        ('CHE', 'COMPUTER HARDWARE ENGINEERING'),
+        ('CE', 'CIVIL ENGINEERING'),
+        ('ME', 'MECHANICAL ENGINEERING'),
+        ('IE', 'INSTRUMENTATION ENGINEERING'),
+        ('EE', 'ELECTRONICS ENGINEERING'),
+        ('EEE', 'ELECTRICAL AND ELECTRONICS ENGINEERING'),
+        ('nss', 'NSS'),
+        ('ncc', 'NCC'),
+        ('lab', 'Lab'),
+        ('hostel', 'Hostel'),
+        ('library', 'Library'),
+        ('academics', 'Academics'),
+    ]
 
 @login_required
 def admin_panel(request):
@@ -47,7 +65,7 @@ def admin_panel(request):
                     first_name = row.get('first_name', '').strip().capitalize()
                     last_name = row.get('last_name', '').strip().capitalize()
                     email = row.get('email', '').strip().lower()
-                    department = row.get('department', '').strip()
+                    department = row.get('department', '').strip().upper()  # Use uppercase for department codes
                     prn = row.get('prn', '').strip()
 
                     # Validate that essential fields are present
@@ -60,7 +78,13 @@ def admin_panel(request):
                         skipped_users.append(f"Username '{username}' already exists.")
                         continue
 
-                    # Check role-specific limitations
+                    # Validate department choice
+                    department_choices = dict(DEPARTMENT_CHOICES)
+                    if department and department not in department_choices.keys():
+                        skipped_users.append(f"Invalid department '{department}' for user: {username}")
+                        continue
+
+                    # Validate role-specific limitations
                     if role == 'hod' and hod_count >= max_hods:
                         skipped_users.append(f"Cannot create more than {max_hods} HODs. Skipping {username}.")
                         continue
@@ -74,9 +98,20 @@ def admin_panel(request):
                         skipped_users.append(f"Cannot create more than {max_nss} NSS users. Skipping {username}.")
                         continue
 
+                    # PRN validation: Only check PRN for student users
+                    if role == 'student':
+                        if not prn:
+                            skipped_users.append(f"PRN is mandatory for student: {username}")
+                            continue
+                        if CustomUser.objects.filter(prn=prn).exists():
+                            skipped_users.append(f"User with PRN '{prn}' already exists.")
+                            continue
+                    else:
+                        prn = None  # Ensure PRN is not saved for non-student users
+
                     try:
                         # Create and save the user
-                        user = CustomUser.objects.create(
+                        user = CustomUser(
                             username=username,
                             first_name=first_name,
                             last_name=last_name,
@@ -86,6 +121,7 @@ def admin_panel(request):
                             prn=prn
                         )
                         user.set_password(raw_password)  # Set password securely
+                        user.full_clean()  # Trigger validation
                         user.save()
 
                         # Update counts based on role
@@ -100,6 +136,8 @@ def admin_panel(request):
 
                         created_users.append(username)
 
+                    except ValidationError as ve:
+                        skipped_users.append(f"Validation error for user '{username}': {ve.message_dict}")
                     except IntegrityError as e:
                         skipped_users.append(f"Error creating user '{username}': {str(e)}")
 
@@ -117,6 +155,7 @@ def admin_panel(request):
         return render(request, 'adminuser/admin_panel.html')
     else:
         return HttpResponseForbidden("You are not authorized to access the admin panel.")
+
 
 @login_required
 def approve_tc_list(request):
@@ -193,6 +232,8 @@ def pending_tc_list(request):
         })
     else:
         return HttpResponseForbidden("You are not authorized to access this page.")
+    
+
         
 @login_required
 def manage_users(request):
@@ -282,15 +323,63 @@ def mark_as_due(request, application_id):
         'due_reasons': ['Fees Due', 'Library Fine', 'Hostel Dues', 'Other'],  # Add any reasons you need
     })
 
+@login_required
+def upload_due_list(request):
+    if request.method == "POST" and request.FILES.get('csv_file'):
+        csv_file = request.FILES['csv_file']
+        decoded_file = csv_file.read().decode('utf-8').splitlines()
+        reader = csv.DictReader(decoded_file)
+
+        for row in reader:
+            name = row.get('Name')  # Fetch 'Name' column from CSV
+            department = row.get('Department')  # Fetch 'Department' column from CSV
+            prn = row.get('PRN')  # Fetch 'PRN' column from CSV
+            due_reason = row.get('Due Reason', 'No reason provided')  # Fetch 'Due Reason' column from CSV
+
+            # Add to UploadedDueList
+            UploadedDueList.objects.update_or_create(
+                prn=prn,
+                defaults={
+                    'name': name,
+                    'department': department,
+                    'due_reason': due_reason,
+                    'added_by': request.user,
+                },
+            )
+
+        # Redirect to reload the page
+        return HttpResponseRedirect(reverse('upload_due_list'))
+
+    # Fetch uploaded dues only for the logged-in user
+    uploaded_due_list = UploadedDueList.objects.filter(added_by=request.user)
+
+    return render(request, 'upload_due_list.html', {'uploaded_due_list': uploaded_due_list})
+
+
+
 
 
 @login_required
 def admin_due_list(request):
-    if request.user.role in ['admin'] or request.user.is_superuser:
-        applications_due = TCApplication.objects.filter(status='due')
-        return render(request, 'adminuser/due_list.html', {
-            'applications_due': applications_due,
-        })
-    else:
-        return HttpResponseForbidden("You are not authorized to view this page.")
+    user = request.user
+
+    # Query manually added due list
+    manual_due_list = TCApplication.objects.filter(due_list=user, is_uploaded_due=False)
+
+    # Query uploaded due list
+    uploaded_due_list = TCApplication.objects.filter(due_list=user, is_uploaded_due=True)
+    due_applications = TCApplication.objects.filter(due_users=request.user)
+
+    context = {
+        'due_applications': due_applications,
+    }
+
+    return render(
+        request,
+        'due_list.html',
+        {
+            'manual_due_list': manual_due_list,
+            'uploaded_due_list': uploaded_due_list,
+        }
+    )
 

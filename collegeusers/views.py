@@ -1,16 +1,113 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponseForbidden
 from django.contrib.auth.decorators import login_required
-from student.models import TCApplication
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.utils.timezone import now
+from student.models import TCApplication , UploadedDueList
 from django.urls import reverse
 from django.http import HttpResponseRedirect
 from django.contrib import messages
+from .forms import ProfileEditForm
+from datetime import timedelta
+from celery import shared_task
 import csv
+import logging
 
-# Dashboard for individual roles
+logger = logging.getLogger(__name__)
+
+
+
+
 @login_required
+def upload_due_list(request):
+    """
+    Handles the uploading of a due list as a CSV file and displays the list of uploaded dues.
+    """
+    if request.method == "POST" and request.FILES.get('csv_file'):
+        csv_file = request.FILES['csv_file']
+        try:
+            # Decode and read the CSV file
+            decoded_file = csv_file.read().decode('utf-8').splitlines()
+            reader = csv.DictReader(decoded_file)
+
+            for row in reader:
+                # Extract fields from the CSV row
+                name = row.get('Name', '').strip()
+                department = row.get('Department', '').strip()
+                prn = row.get('PRN', '').strip()
+                due_reason = row.get('Due Reason', 'No reason provided').strip()
+
+                # Validate required fields
+                if name and department and prn:
+                    UploadedDueList.objects.update_or_create(
+                        prn=prn,
+                        defaults={
+                            'name': name,
+                            'department': department,
+                            'due_reason': due_reason,
+                            'added_by': request.user,
+                        },
+                    )
+            logger.info("CSV file uploaded and processed successfully.")
+        except Exception as e:
+            logger.error(f"Error processing CSV file: {e}")
+            return render(request, 'upload_due_list.html', {'error': "Invalid CSV file format."})
+
+        # Redirect to reload the page
+        return HttpResponseRedirect(reverse('upload_due_list'))
+
+    # Fetch uploaded dues only for the logged-in user
+    uploaded_due_list = UploadedDueList.objects.filter(added_by=request.user)
+    return render(request, 'upload_due_list.html', {'uploaded_due_list': uploaded_due_list})
+
+@login_required
+def view_profile(request):
+    """View for displaying the user profile."""
+    return render(request, 'collegeusers/view_profile.html', {'user': request.user})
+
+@login_required
+def edit_profile(request):
+    """View for editing the user profile."""
+    user = request.user
+
+    if request.method == "POST":
+        form = ProfileEditForm(request.POST, request.FILES, instance=user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profile updated successfully!")
+            return redirect('view_profile')
+        else:
+            messages.error(request, "Please correct the errors below.")
+    else:
+        form = ProfileEditForm(instance=user)
+
+    return render(request, 'collegeusers/edit_profile.html', {'form': form})
+
+#@login_required
 def hod_dashboard(request):
+    # Check if the user is an HOD
     if request.user.role != 'hod':
+        return HttpResponseForbidden("You are not authorized to access this page.")
+
+    # Fetch pending and approved applications for the HOD
+    pending_applications = TCApplication.objects.filter(status='pending', pending_approval=request.user)
+    approved_applications = TCApplication.objects.filter(approved_by=request.user)
+
+
+    # Pass the data to the template
+    context = {
+        'pending_applications': pending_applications,
+        'approved_applications': approved_applications,
+        'role': 'HOD',
+    }
+
+    return render(request, 'hod/hod_dashboard.html', context)
+
+
+@login_required
+def lab_dashboard(request):
+    if request.user.role != 'lab':
         return HttpResponseForbidden("You are not authorized to access this page.")
 
     pending_applications = TCApplication.objects.filter(status='pending', pending_approval=request.user)
@@ -19,9 +116,56 @@ def hod_dashboard(request):
     context = {
         'pending_applications': pending_applications,
         'approved_applications': approved_applications,
-        'role': 'HOD',
+        'role': 'lab',
     }
-    return render(request, 'hod/hod_dashboard.html', context)
+    return render(request, 'science_lab/science_lab_dashboard.html', context)
+
+@login_required
+def hostel_dashboard(request):
+    if request.user.role != 'hostel':
+        return HttpResponseForbidden("You are not authorized to access this page.")
+
+    pending_applications = TCApplication.objects.filter(status='pending', pending_approval=request.user)
+    approved_applications = TCApplication.objects.filter(approved_by=request.user)
+
+    context = {
+        'pending_applications': pending_applications,
+        'approved_applications': approved_applications,
+        'role': 'hostel',
+    }
+    return render(request, 'hostel/hostel_dashboard.html', context)
+
+@login_required
+def library_dashboard(request):
+    if request.user.role != 'library':
+        return HttpResponseForbidden("You are not authorized to access this page.")
+
+    pending_applications = TCApplication.objects.filter(status='pending', pending_approval=request.user)
+    approved_applications = TCApplication.objects.filter(approved_by=request.user)
+
+    context = {
+        'pending_applications': pending_applications,
+        'approved_applications': approved_applications,
+        'role': 'library',
+    }
+    return render(request, 'library/library_dashboard.html', context)
+
+
+@login_required
+def academics_dashboard(request):
+    if request.user.role != 'academics':
+        return HttpResponseForbidden("You are not authorized to access this page.")
+
+    pending_applications = TCApplication.objects.filter(status='pending', pending_approval=request.user)
+    approved_applications = TCApplication.objects.filter(approved_by=request.user)
+
+    context = {
+        'pending_applications': pending_applications,
+        'approved_applications': approved_applications,
+        'role': 'academics',
+    }
+    return render(request, 'academics/academics_dashboard.html', context)
+
 
 
 @login_required
@@ -90,7 +234,7 @@ def nss_dashboard(request):
 
 @login_required
 def handle_tc_application(request, application_id, action):
-    if request.user.role not in ['hod', 'staff', 'tutor', 'ncc', 'nss']:
+    if request.user.role not in ['admin','hod', 'staff', 'tutor', 'ncc', 'nss', 'lab', 'hostel', 'library', 'academics']:
         return HttpResponseForbidden("You are not authorized to perform this action.")
 
     application = get_object_or_404(TCApplication, id=application_id)
@@ -122,13 +266,20 @@ def approved_list_view(request, role):
 
 @login_required
 def pending_applications(request, role=None):
-    """
-    Display pending applications for the logged-in user.
-    Each user sees applications where they are in the pending approval list.
-    """
     user = request.user
-    pending_list = TCApplication.objects.filter(pending_approval=user)
+
+    if user.role == 'student':
+        pending_list = TCApplication.objects.filter(prn=user.prn, status='pending')
+    else:
+        pending_list = TCApplication.objects.filter(pending_approval=user)
+
+    # Debug PRNs in the pending list
+    for app in pending_list:
+        print(f"Application Name: {app.name}, PRN: {app.prn}")
+
     return render(request, 'pending_applications.html', {'pending_list': pending_list})
+
+
 
 @login_required
 def approve_tc(request, tc_id):
@@ -206,30 +357,34 @@ def mark_as_due(request, tc_id):
         user_role = 'nss'
     elif hasattr(request.user, 'ncc'):
         user_role = 'ncc'
+    elif hasattr(request.user, 'lab'):
+        user_role = 'lab'
+    elif hasattr(request.user, 'hostel'):
+        user_role = 'hostel'
+    elif hasattr(request.user, 'library'):
+        user_role = 'library'
+    elif hasattr(request.user, 'academics'):
+        user_role = 'academics'    
 
     return redirect('pending_applications', role=user_role)
 
+
+
 @login_required
-def upload_due_list(request):
-    if request.method == "POST" and request.FILES.get('csv_file'):
-        csv_file = request.FILES['csv_file']
-        decoded_file = csv_file.read().decode('utf-8').splitlines()
-        reader = csv.DictReader(decoded_file)
+def remove_due(request, due_id):
+    # Fetch the due entry
+    due = get_object_or_404(UploadedDueList, id=due_id, added_by=request.user)
 
-        for row in reader:
-            prn = row.get('PRN')
-            due_reason = row.get('Due Reason', 'No reason provided')
+    # Delete the entry
+    due.delete()
 
-            try:
-                application = TCApplication.objects.get(prn=prn)
-                application.add_to_due_list(request.user, due_reason=due_reason, is_uploaded_due=True)
-            except TCApplication.DoesNotExist:
-                # Handle case where application doesn't exist
-                continue
+    # Add a success message
+    messages.success(request, "The due has been removed successfully.")
 
-        return HttpResponseRedirect(reverse('due_list'))
+    # Redirect back to the due list page
+    return HttpResponseRedirect(reverse('upload_due_list'))
 
-    return render(request, 'upload_due_list.html')
+
 
 @login_required
 def due_list(request):

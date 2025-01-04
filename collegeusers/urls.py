@@ -17,4 +17,11 @@ urlpatterns = [
     path('mark-as-due/<int:tc_id>/', views.mark_as_due, name='mark_as_due'),
     path('approve-due/<int:application_id>/', views.approve_due_application, name='approve_due_application'),
     path('reject-due/<int:application_id>/', views.reject_due_application, name='reject_due_application'),
+    path('lab/dashboard/', views.lab_dashboard, name='lab_dashboard'),
+    path('hostel/dashboard/', views.hostel_dashboard, name='hostel_dashboard'),
+    path('library/dashboard/', views.library_dashboard, name='library_dashboard'),
+    path('academics/dashboard/', views.academics_dashboard, name='academics_dashboard'),
+    path('profile/', views.view_profile, name='view_profile'),
+    path('profile/edit/', views.edit_profile, name='edit_profile'),
+    path('remove-due/<int:due_id>/', views.remove_due, name='remove_due'),
 ]

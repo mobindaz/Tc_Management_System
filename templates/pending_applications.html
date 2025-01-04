@@ -36,6 +36,7 @@
                 <tr>
                     <th>Name</th>
                     <th>Department</th>
+                    <th>PRN</th>
                     <th>Reason</th>
                     <th>Actions</th>
                 </tr>
@@ -44,7 +45,8 @@
                 {% for application in pending_list %}
                     <tr>
                         <td>{{ application.name }}</td>
-                        <td>{{ application.get_department_display }}</td>
+                        <td>{{ application.department}}</td>
+                        <td>{{ application.prn }}</td>
                         <td>{{ application.reason }}</td>
                         <td>
                             <a href="{% url 'approve_tc' application.id %}" class="btn btn-success btn-sm">Approve</a>

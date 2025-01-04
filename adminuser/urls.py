@@ -13,4 +13,5 @@ urlpatterns = [
     path('admin-panel/', views.admin_panel, name='admin_panel'),
     path('mark-as-due/<int:application_id>/', views.mark_as_due, name='mark_as_due'),
     path('due-list/', views.admin_due_list, name='admin_due_list'),
+    path('upload-due-list/', views.upload_due_list, name='upload_due_list'),
 ]

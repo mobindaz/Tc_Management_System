@@ -40,6 +40,14 @@ def login_view(request):
                 return redirect('nss_dashboard')
             elif getattr(user, 'role', None) == 'ncc':
                 return redirect('ncc_dashboard')
+            elif getattr(user, 'role', None) == 'lab':
+                return redirect('lab_dashboard')
+            elif getattr(user, 'role', None) == 'hostel':
+                return redirect('hostel_dashboard')
+            elif getattr(user, 'role', None) == 'library':
+                return redirect('library_dashboard')
+            elif getattr(user, 'role', None) == 'academics':
+                return redirect('academics_dashboard')
             elif getattr(user, 'role', None) == 'student':
                 return redirect('user_dashboard')  # Replace with your student dashboard URL
             else:

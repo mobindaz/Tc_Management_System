@@ -8,7 +8,7 @@
 
     <!-- Manually Added Due List -->
     <div class="mb-5">
-        <h3>Manually Added Due List</h3>
+        <h3>Due List</h3>
         {% if manual_due_list %}
             <table class="table table-striped">
                 <thead>
@@ -37,36 +37,8 @@
                 </tbody>
             </table>
         {% else %}
-            <div class="alert alert-info">No manually added dues found.</div>
+            <div class="alert alert-info">No dues found.</div>
         {% endif %}
     </div>
-
-    <!-- Uploaded Due List -->
-    <div>
-        <h3>Uploaded Due List</h3>
-        {% if uploaded_due_list %}
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>PRN</th>
-                        <th>Name</th>
-                        <th>Reason</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for application in uploaded_due_list %}
-                        <tr>
-                            <td>{{ application.prn }}</td>
-                            <td>{{ application.name }}</td>
-                            <td>{{ application.due_reason }}</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% else %}
-            <div class="alert alert-info">No uploaded dues found.</div>
-        {% endif %}
-    </div>
-</div>
 
 {% endblock %}

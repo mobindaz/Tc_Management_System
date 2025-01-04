@@ -3,37 +3,39 @@
 {% block content %}
 <style>
     .container {
-        margin: 20px -90px;
-        width: 80%;
+        margin: 20px auto;
+        width: 60%;
     }
 
-    /* Align the entire dashboard card to the left */
     .dashboard-card {
-        float: left; /* Aligns the div to the left */
-        width: 100%; /* Ensures it takes up the full container width */
-        margin-top: 10px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         border-radius: 8px;
         overflow: hidden;
+        background-color: #ffffff;
     }
 
     .dashboard-header {
         background-color: #007bff;
         color: #fff;
-        text-align: center; /* Aligns text within the div to the left */
+        text-align: center;
         padding: 15px;
         font-size: 1.5em;
         font-weight: bold;
+        border-radius: 8px 8px 0 0;
     }
 
     .dashboard-body {
-        text-align: left; /* Aligns all content inside to the left */
         padding: 20px;
     }
 
-    /* Form Styles */
+    .form-group {
+        margin-bottom: 15px;
+    }
+
     .form-label {
         font-weight: bold;
+        display: block;
+        margin-bottom: 5px;
     }
 
     .form-control {
@@ -41,6 +43,7 @@
         border: 1px solid #ced4da;
         padding: 10px;
         font-size: 1em;
+        width: 100%;
     }
 
     .form-control:focus {
@@ -56,10 +59,16 @@
         border-radius: 5px;
         cursor: pointer;
         transition: background-color 0.3s ease;
+        display: block;
+        width: 100%;
     }
 
     .btn-primary:hover {
         background-color: #0056b3;
+    }
+
+    .badge {
+        font-size: 0.9em;
     }
 </style>
 
@@ -85,31 +94,30 @@
                     </span>
                 </p>
             {% else %}
-                <h3 class="text-secondary">Apply for a Transfer Certificate</h3>
-                <form method="POST" class="mt-4">
+                <h3 class="text-secondary">Submit a New TC Application</h3>
+                <form method="POST">
                     {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="name" class="form-label">Name:</label>
+                    <!-- Form Fields -->
+                    <div class="form-group">
+                        <label for="name">Name:</label>
                         <input type="text" id="name" name="name" class="form-control" required>
                     </div>
-                    <div class="mb-3">
-                        <label for="roll_number" class="form-label">Roll Number:</label>
+                    <div class="form-group">
+                        <label for="roll_number">Roll Number:</label>
                         <input type="text" id="roll_number" name="roll_number" class="form-control" required>
                     </div>
-                    <div class="mb-3">
-                        <label for="department" class="form-label">Department:</label>
+                    <div class="form-group">
+                        <label for="department">Department:</label>
                         <input type="text" id="department" name="department" class="form-control" required>
                     </div>
-                    <div class="mb-3">
-                        <label for="reason" class="form-label">Reason:</label>
-                        <textarea id="reason" name="reason" class="form-control" rows="4" required></textarea>
+                    <div class="form-group">
+                        <label for="reason">Reason for TC:</label>
+                        <textarea id="reason" name="reason" class="form-control" required></textarea>
                     </div>
                     <button type="submit" class="btn btn-primary">Submit Application</button>
                 </form>
             {% endif %}
         </div>
-    </div>
+        
 </div>
-
 {% endblock %}
-
