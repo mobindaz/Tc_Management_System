@@ -95,6 +95,11 @@
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuLink">
                     <!-- Dropdown Links -->
                     <li><a href="{% url 'view_profile' %}" class="dropdown-item"><i class="fas fa-user"></i> View Profile</a></li>
+                    <li>
+                        <a href="{% url 'auto_approval_settings' %}" class="dropdown-item">
+                            <i class="fa fa-cog"></i> Auto Approval Settings
+                        </a>
+                    </li>                                     
                     <li><hr class="dropdown-divider"></li>
                     <li><a href="{% url 'logout' %}" class="dropdown-item text-danger"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
                 </ul>

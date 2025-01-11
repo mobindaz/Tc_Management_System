@@ -24,4 +24,6 @@ urlpatterns = [
     path('profile/', views.view_profile, name='view_profile'),
     path('profile/edit/', views.edit_profile, name='edit_profile'),
     path('remove-due/<int:due_id>/', views.remove_due, name='remove_due'),
+    path('auto-approve/', views.auto_approve_view, name='auto_approve_view'),
+    path('settings/auto-approval/', views.auto_approval_settings, name='auto_approval_settings'),
 ]

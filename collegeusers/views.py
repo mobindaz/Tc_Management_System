@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -10,14 +10,90 @@ from django.http import HttpResponseRedirect
 from django.contrib import messages
 from .forms import ProfileEditForm
 from datetime import timedelta
-from celery import shared_task
+from .models import AutoApprovalSettings
 import csv
 import logging
+import threading
 
 logger = logging.getLogger(__name__)
 
 
+# Process Applications
+def process_applications(user):
+    """
+    Function to process TC applications for a specific user every 2 minutes.
+    - If a PRN matches the uploaded due list, the application goes to 'due'.
+    - If not, the application is auto-approved.
+    """
+    # Get all applications in 'pending' status that are at least 2 minutes old
+    two_minutes_ago = now() - timedelta(minutes=2)
+    pending_apps = TCApplication.objects.filter(status='pending', created_at__lte=two_minutes_ago)
 
+    for app in pending_apps:
+        # Check if the PRN exists in any uploaded due list for the given user
+        matching_due = UploadedDueList.objects.filter(prn=app.prn, added_by=user)
+
+        if matching_due.exists():
+            # Move the application to the due list
+            app.status = 'due'
+            app.due_users.add(user)
+        else:
+            # Approve the application
+            app.status = 'approved'
+
+        app.save()
+
+# Auto Approval View
+@login_required
+def auto_approve_view(request):
+    """
+    View to start the auto-approval process for non-student roles.
+    """
+    user = request.user
+
+    # Ensure only non-student roles can start auto-approval
+    if user.role == 'student':
+        return JsonResponse({'error': 'Students are not authorized to access this feature.'}, status=403)
+
+    def auto_approval_task():
+        """
+        Background task for processing applications every 2 minutes for the current user.
+        """
+        while True:
+            process_applications(user)
+            threading.Event().wait(120)  # Wait for 2 minutes before the next execution
+
+    # Run the background task in a new thread
+    thread = threading.Thread(target=auto_approval_task, daemon=True)
+    thread.start()
+
+    return JsonResponse({'message': f'Auto-approval started successfully for {user.role}.'}, status=200)
+
+@login_required
+def auto_approval_settings(request):
+    """
+    A page to toggle auto-approval on or off.
+    """
+    user = request.user
+
+    # Ensure only non-student users can toggle the setting
+    if user.role == 'student':
+        return JsonResponse({'error': 'Students are not authorized to access this feature.'}, status=403)
+
+    # Fetch or create the setting for the current user
+    setting, _ = AutoApprovalSettings.objects.get_or_create(user=user)
+
+    if request.method == 'POST':
+        # Toggle the auto-approval setting
+        auto_approval_state = request.POST.get('auto_approval_state') == 'on'
+        setting.auto_approval_enabled = auto_approval_state
+        setting.save()
+
+        return JsonResponse({
+            'message': f"Auto-approval has been {'enabled' if auto_approval_state else 'disabled'}."
+        })
+
+    return render(request, 'auto_approval_settings.html', {'auto_approval_enabled': setting.auto_approval_enabled})
 
 @login_required
 def upload_due_list(request):

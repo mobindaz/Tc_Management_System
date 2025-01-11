@@ -5,14 +5,52 @@ from django.http import HttpResponseForbidden, FileResponse
 from io import BytesIO
 from reportlab.pdfgen import canvas
 from adminuser.models import CustomUser
-
+from django.db import transaction
 from django.shortcuts import get_object_or_404
+import logging
+
+logger = logging.getLogger(__name__)
+
+from django.db.models import Q
+
+def check_and_process_due_status(prn, application, relevant_users):
+    """
+    Checks uploaded due lists for the given PRN and processes due entries.
+
+    Parameters:
+        prn (str): The PRN of the student.
+        application (TCApplication): The TC application object.
+        relevant_users (QuerySet): Relevant users (departmental and general) to check due lists.
+
+    Returns:
+        bool: True if the application was marked as 'due', False otherwise.
+    """
+    # Step 1: Fetch all uploaded due list entries for this PRN by relevant users
+    due_entries = UploadedDueList.objects.filter(prn=prn, added_by__in=relevant_users)
+
+    if due_entries.exists():
+        # Step 2: Add each relevant user to the application's due list
+        for entry in due_entries:
+            application.due_list.add(entry.added_by)
+        
+        # Step 3: Delete the uploaded due list entries (bulk action)
+        due_entries.delete()
+
+        # Step 4: Update application status to 'due'
+        application.status = 'due'
+        application.save()
+
+        # Return True to indicate that the application was marked as 'due'
+        return True
+
+    # Return False if no due entries were found
+    return False
 
 @login_required
 def user_dashboard(request):
     """
     Student dashboard to apply for a Transfer Certificate (TC).
-    Shows status if an application already exists.
+    Checks uploaded due lists for relevant users and updates the application's status accordingly.
     """
     if request.user.role != 'student':
         return HttpResponseForbidden("You are not authorized to access the student dashboard.")
@@ -42,21 +80,27 @@ def user_dashboard(request):
             status='pending'
         )
 
-        # Assign reviewers based on the department
-        department_reviewers = CustomUser.objects.filter(
+        # Fetch relevant users
+        department_roles = CustomUser.objects.filter(
             role__in=['hod', 'tutor', 'staff'], department=department
         )
-        general_reviewers = CustomUser.objects.filter(
+        general_roles = CustomUser.objects.filter(
             role__in=['admin', 'nss', 'ncc', 'lab', 'hostel', 'library', 'academics']
         )
+        relevant_users = department_roles | general_roles
 
-        # Add reviewers to the application's pending approval list
-        application.pending_approval.add(*department_reviewers, *general_reviewers)
-        application.save()
+        # Check and process due status
+        is_due = check_and_process_due_status(prn, application, relevant_users)
+
+        if not is_due:
+            # If no dues, add reviewers to the pending approval list
+            application.pending_approval.add(*relevant_users)
+            application.save()
 
         return redirect('application_status')  # Redirect to the application status page
 
     return render(request, 'student/user_dashboard.html')
+
 
 
 @login_required

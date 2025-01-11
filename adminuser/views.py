@@ -258,6 +258,16 @@ def manage_users(request):
             user.role = "NCC"
         elif getattr(user, 'role', '') == 'nss':
             user.role = "NSS"
+        elif getattr(user, 'role', '') == 'lab':
+            user.role = "Lab"
+        elif getattr(user, 'role', '') == 'hostel':
+            user.role = "Hostel"
+        elif getattr(user, 'role', '') == 'library':
+            user.role = "Library"
+        elif getattr(user, 'role', '') == 'academics':
+            user.role = "Academics"
+        elif getattr(user, 'role', '') == 'staff':
+            user.role = "Staff"
         elif getattr(user, 'role', '') == 'student':
             user.role = "Student"
         else:

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Auto Approval Settings</h1>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-check form-switch">
+            <input
+                class="form-check-input"
+                type="checkbox"
+                id="autoApprovalSwitch"
+                name="auto_approval_state"
+                {% if auto_approval_enabled %}checked{% endif %}
+            >
+            <label class="form-check-label" for="autoApprovalSwitch">
+                Auto Approval 
+                {% if auto_approval_enabled %}
+                    Enabled
+                {% else %}
+                    Disabled
+                {% endif %}
+            </label>
+        </div>
+        <button type="submit" class="btn btn-primary mt-3">Save Settings</button>
+    </form>
+</div>
+{% endblock %}

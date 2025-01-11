@@ -64,9 +64,6 @@ class TCApplication(models.Model):
         help_text="Users who have flagged this application as due."
     )
 
-    # Auto-approval time (add a field to store deadline)
-   
-
     def clean(self):
         """
         Ensure due reason is provided when the status is 'due'.
@@ -113,7 +110,7 @@ class TCApplication(models.Model):
         self.is_uploaded_due = is_uploaded_due
         self.due_list.add(user)
         self.save()
-
+    
 
     def __str__(self):
         return f"{self.name} ({self.get_department_display()}) - {self.status}"
@@ -123,6 +120,8 @@ class TCApplication(models.Model):
         verbose_name_plural = "Transfer Certificate Applications"
         ordering = ['-updated_at']
 
+# Auto-approval time (add a field to store deadline)
+    
 
 class UploadedDueList(models.Model):
     name = models.CharField(max_length=100, null=True, blank=True)
@@ -137,7 +136,10 @@ class UploadedDueList(models.Model):
         blank=True
     )
 
-
+    def get_due_list_prns(self):
+        """Fetch all PRNs from the Due List."""
+        return self.due_list.values_list('prn', flat=True)
+    
     def __str__(self):
         return f"{self.prn} - {self.due_reason}"
 

@@ -41,7 +41,7 @@ class CustomUser(AbstractUser):
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     email = models.EmailField(unique=False, blank=True, null=True)
     profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
-
+    auto_approval_enabled = models.BooleanField(default=False) 
     # Student-specific fields
     prn = models.CharField(max_length=20, blank=True, null=True, unique=True)
     parent_name = models.CharField(max_length=100, blank=True, null=True)
