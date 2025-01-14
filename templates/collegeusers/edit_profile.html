@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Edit Profile</h1>
+
+<form method="POST" enctype="multipart/form-data" class="profile-edit-form">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <div class="form-buttons">
+        <button type="submit" class="btn btn-success">Save Changes</button>
+        <a href="{% url 'view_profile' %}" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+
+<style>
+/* General Styling */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 0;
+}
+
+h1 {
+    font-size: 2.5rem;
+    text-align: center;
+    margin-top: 20px;
+    color: #333;
+}
+
+/* Profile Edit Form Styling */
+.profile-edit-form {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 30px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.profile-edit-form .form-group {
+    margin-bottom: 20px;
+}
+
+.profile-edit-form label {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.profile-edit-form input,
+.profile-edit-form select,
+.profile-edit-form textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+    background-color: #f9f9f9;
+}
+
+.profile-edit-form input[type="file"] {
+    padding: 5px;
+}
+
+/* Form Buttons Styling */
+.form-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.form-buttons .btn {
+    padding: 10px 20px;
+    font-size: 1rem;
+    border-radius: 5px;
+}
+
+.btn-success {
+    background-color: #28a745;
+    color: white;
+    border: none;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+/* Responsive Styling */
+@media (max-width: 768px) {
+    .profile-edit-form {
+        padding: 20px;
+    }
+    h1 {
+        font-size: 2rem;
+    }
+}
+</style>
+
+{% endblock %}

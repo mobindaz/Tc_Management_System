@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Approve TC Applications{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Pending Transfer Certificate (TC) Applications</h2>
+
+    {% if pending_applications %}
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Student Name</th>
+                <th>Roll Number</th>
+                <th>Department</th>
+                <th>PRN</th>
+                <th>Reason</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for application in pending_applications %}
+            <tr>
+                <td>{{ application.name }}</td>
+                <td>{{ application.roll_number }}</td>
+                <td>{{ application.department }}</td>
+                <td>{{ application.prn }}</td>
+                <td>{{ application.reason }}</td>
+                <td>
+                    <form method="POST" action="{% url 'approve_tc_action' application.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success" onclick="return confirmApproval()">Approve</button>
+                    </form>
+                    <form method="POST" action="{% url 'reject_tc_action' application.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Reject</button>
+                    </form>
+                    <a href="{% url 'mark_as_due' application.id %}" class="btn btn-warning btn-sm">Mark as Due</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p>No pending TC applications available.</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function confirmApproval() {
+        return confirm("Are you sure you want to approve this application?");
+    }
+</script>
+{% endblock %}

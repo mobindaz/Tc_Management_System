@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}Pending and Rejected TC Applications{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Pending & Rejected Transfer Certificate (TC) Applications</h2>
+
+    <!-- Pending Applications -->
+    <h3>Pending Applications</h3>
+    {% if pending_applications %}
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Student Name</th>
+                <th>Roll Number</th>
+                <th>Department</th>
+                <th>PRN</th>
+                <th>Reason</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for application in pending_applications %}
+            <tr>
+                <td>{{ application.name }}</td>
+                <td>{{ application.roll_number }}</td>
+                <td>{{ application.department }}</td>
+                <td>{{ application.prn }}</td>
+                <td>{{ application.reason }}</td>
+                <td>{{ application.status }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p>No pending TC applications available.</p>
+    {% endif %}
+
+    <!-- Rejected Applications -->
+    <h3>Rejected Applications</h3>
+    {% if rejected_applications %}
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Student Name</th>
+                <th>Roll Number</th>
+                <th>Department</th>
+                <th>PRN</th>
+                <th>Reason</th>
+                <th>Rejected By </th>
+                <th>Date Rejected</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for application in rejected_applications %}
+            <tr>
+                <td>{{ application.name }}</td>
+                <td>{{ application.roll_number }}</td>
+                <td>{{ application.department }}</td>
+                <td>{{ application.prn }}</td>
+                <td>{{ application.reason }}</td>
+                <td>
+                        {{ application.rejected_by.username }}
+                </td>                
+                <td>{{ application.updated_at|date:"d M, Y" }}</td>
+                <td>
+                    <a href="{% url 'approve_tc_action' application.id %}?next=pending_tc_list" class="btn btn-success btn-sm">Approve</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p>No rejected TC applications available.</p>
+    {% endif %}
+</div>
+{% endblock %}

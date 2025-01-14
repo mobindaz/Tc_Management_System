@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center mb-4">Due Applications</h2>
+    {% if due_actions %}
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Application</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for action in due_actions %}
+            <tr>
+                <td>{{ action.tc_application.id }}</td>
+                <td>{{ action.tc_application.name }}</td>
+                <td>{{ action.status }}</td>
+                <td>
+                    <form method="post" class="d-inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="action_id" value="{{ action.id }}">
+                        <button type="submit" name="status" value="approved" class="btn btn-success btn-sm">Approve</button>
+                        <button type="submit" name="status" value="rejected" class="btn btn-danger btn-sm">Reject</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No due actions found.</p>
+    {% endif %}
+</div>
+{% endblock %}

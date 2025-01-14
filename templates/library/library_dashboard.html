@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Library Dashboard{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <h1 class="text-center">Welcome to the Library Dashboard</h1>
+</div>
+<div class="container">
+    <div class="row">
+        <div class="col-lg-4 col-6">
+            <div class="small-box bg-warning">
+                <div class="inner">
+                    <h3>{{ pending_count }}</h3>
+                    <p>Pending Applications</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <a href="{% url 'pending_applications' 'library' %}" class="small-box-footer">
+                    View Details <i class="fas fa-arrow-circle-right"></i>
+                </a>
+            </div>
+        </div>
+        <div class="col-lg-4 col-6">
+            <div class="small-box bg-primary">
+                <div class="inner">
+                    <h3>{{ approved_count }}</h3>
+                    <p>Approved Applications</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-thumbs-up"></i>
+                </div>
+                <a href="{% url 'approved_list' 'library' %}"  class="small-box-footer">
+                    View Details <i class="fas fa-arrow-circle-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

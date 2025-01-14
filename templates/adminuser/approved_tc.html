@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Approved TC Applications{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Approved Transfer Certificate (TC) Applications</h2>
+
+    {% if approved_applications %}
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Student Name</th>
+                <th>Roll Number</th>
+                <th>Department</th>
+                <th>PRN</th>
+                <th>Reason</th>
+                <th>Approved By </th>
+                <th>Date Approved</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for application in approved_applications %}
+            <tr>
+                <td>{{ application.name }}</td>
+                <td>{{ application.roll_number }}</td>
+                <td>{{ application.department }}</td>
+                <td>{{ application.prn }}</td>
+                <td>{{ application.reason }}</td>
+                <td>{{ application.approved_by.username }}</td>
+                <td>{{ application.updated_at|date:"d M, Y" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p>No approved TC applications available.</p>
+    {% endif %}
+</div>
+{% endblock %}

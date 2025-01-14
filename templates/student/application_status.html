@@ -1,0 +1,21 @@
+{% extends 'base_student.html' %}
+
+{% block content %}
+<div class="dashboard-body">
+    <h3 class="text-secondary">Your Current TC Application</h3>
+    <p><strong>Name:</strong> {{ application.name }}</p>
+    <p><strong>Roll Number:</strong> {{ application.roll_number }}</p>
+    <p><strong>Department:</strong> {{ application.department }}</p>
+    <p><strong>Reason:</strong> {{ application.reason }}</p>
+    <p><strong>Status:</strong> 
+        <span class="badge 
+            {% if application.status == 'approved' %} bg-success 
+            {% elif application.status == 'rejected' %} bg-danger 
+            {% elif application.status == 'pending' %} bg-warning text-dark 
+            {% else %} bg-secondary {% endif %}">
+            {{ application.status|title }}
+        </span>
+    </p>
+</div>
+
+{% endblock %}

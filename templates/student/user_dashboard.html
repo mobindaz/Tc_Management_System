@@ -1,0 +1,123 @@
+{% extends 'base_student.html' %}
+
+{% block content %}
+<style>
+    .container {
+        margin: 20px auto;
+        width: 60%;
+    }
+
+    .dashboard-card {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        overflow: hidden;
+        background-color: #ffffff;
+    }
+
+    .dashboard-header {
+        background-color: #007bff;
+        color: #fff;
+        text-align: center;
+        padding: 15px;
+        font-size: 1.5em;
+        font-weight: bold;
+        border-radius: 8px 8px 0 0;
+    }
+
+    .dashboard-body {
+        padding: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-label {
+        font-weight: bold;
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .form-control {
+        border-radius: 5px;
+        border: 1px solid #ced4da;
+        padding: 10px;
+        font-size: 1em;
+        width: 100%;
+    }
+
+    .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        border: none;
+        padding: 10px 20px;
+        font-size: 1em;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        display: block;
+        width: 100%;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+    }
+
+    .badge {
+        font-size: 0.9em;
+    }
+</style>
+
+<div class="container">
+    <div class="dashboard-card">
+        <div class="dashboard-header">
+            Student Dashboard
+        </div>
+        <div class="dashboard-body">
+            {% if application %}
+                <h3 class="text-secondary">Your Current TC Application</h3>
+                <p><strong>Name:</strong> {{ application.name }}</p>
+                <p><strong>Roll Number:</strong> {{ application.roll_number }}</p>
+                <p><strong>Department:</strong> {{ application.department }}</p>
+                <p><strong>Reason:</strong> {{ application.reason }}</p>
+                <p><strong>Status:</strong> 
+                    <span class="badge 
+                        {% if application.status == 'approved' %} bg-success 
+                        {% elif application.status == 'rejected' %} bg-danger 
+                        {% elif application.status == 'pending' %} bg-warning text-dark 
+                        {% else %} bg-secondary {% endif %}">
+                        {{ application.status|title }}
+                    </span>
+                </p>
+            {% else %}
+                <h3 class="text-secondary">Submit a New TC Application</h3>
+                <form method="POST">
+                    {% csrf_token %}
+                    <!-- Form Fields -->
+                    <div class="form-group">
+                        <label for="name">Name:</label>
+                        <input type="text" id="name" name="name" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="roll_number">Roll Number:</label>
+                        <input type="text" id="roll_number" name="roll_number" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="department">Department:</label>
+                        <input type="text" id="department" name="department" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reason">Reason for TC:</label>
+                        <textarea id="reason" name="reason" class="form-control" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit Application</button>
+                </form>
+            {% endif %}
+        </div>
+        
+</div>
+{% endblock %}

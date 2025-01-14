@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Due List{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="text-center mb-4">Upload Due List</h2>
+
+    <!-- Upload Form -->
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="csv_file" class="form-label">Upload CSV File</label>
+            <input type="file" name="csv_file" id="csv_file" class="form-control" required>
+            <small class="form-text text-muted">
+                Please upload a CSV file with columns <strong>PRN</strong> and <strong>Due Reason</strong>.
+            </small>
+        </div>
+        <button type="submit" class="btn btn-primary">Upload</button>
+    </form>
+
+    <!-- Uploaded Due List -->
+    <div class="mt-5">
+        <h3>Uploaded Due List</h3>
+        {% if uploaded_due_list %}
+            <table class="table table-bordered table-striped">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>S/No.</th>
+                        <th>Name</th>
+                        <th>PRN</th>
+                        <th>Department</th>
+                        <th>Due Reason</th>
+                        <th>Added By</th>
+                        <th>Action</th> <!-- New column for the button -->
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for application in uploaded_due_list %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ application.name }}</td>
+                            <td>{{ application.prn }}</td>
+                            <td>{{ application.department }}</td>
+                            <td>{{ application.due_reason }}</td>
+                            <td>{{ application.added_by.username }}</td>
+                            <td>
+                                <!-- Form to trigger "Remove Due" action -->
+                                <form method="post" action="{% url 'remove_due' application.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger btn-sm">
+                                        Remove Due
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="alert alert-info">
+                No uploaded dues found. Upload a file to see the list.
+            </div>
+        {% endif %}
+    </div>
+    
+{% endblock %}

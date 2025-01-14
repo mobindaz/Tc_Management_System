@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Clerk Dashboard{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <h1 class="text-center">Welcome to the Clerk Dashboard</h1>
+</div>
+<div class="container">
+    <div class="row">
+        <div class="col-lg-4 col-6">
+            <div class="small-box bg-info">
+                <div class="inner">
+                    <h3>{{ pending_count }}</h3>
+                    <p>Pending Applications</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <a href="{% url 'pending_list' %}" class="small-box-footer">
+                    View Details <i class="fas fa-arrow-circle-right"></i>
+                </a>
+            </div>
+        </div>
+        <div class="col-lg-4 col-6">
+            <div class="small-box bg-success">
+                <div class="inner">
+                    <h3>{{ approved_count }}</h3>
+                    <p>Approved Applications</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <a href="{% url 'approved_list_clerk' %}" class="small-box-footer">
+                    View Details <i class="fas fa-arrow-circle-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

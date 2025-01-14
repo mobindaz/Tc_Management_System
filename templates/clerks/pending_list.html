@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Pending Applications{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <h1 class="text-center">Pending Applications</h1>
+</div>
+<div class="container">
+    <table class="table table-bordered">
+        <thead class="thead-dark">
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Forwarded By</th>
+                <th>Forwarded By Role</th>
+                <th>Forwarded By Department</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for action in pending_actions %}
+            <tr>
+                <td>{{ action.id }}</td>
+                <td>{{ action.tc_application.name }}</td>
+                <td>{{ action.tc_application.forwarded_by_name|default:"Not Available" }}</td>
+                <td>{{ action.tc_application.forwarded_by_role|default:"Not Available" }}</td>
+                <td>{{ action.tc_application.forwarded_by_department|default:"Not Available" }}</td>
+                <td>{{ action.status }}</td>
+                <td>
+                    <form method="post" class="d-inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="action_id" value="{{ action.id }}">
+                        <input type="hidden" name="status" value="approved">
+                        <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                    </form>
+                    <form method="post" class="d-inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="action_id" value="{{ action.id }}">
+                        <input type="hidden" name="status" value="rejected">
+                        <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                    </form>
+                    <form method="post" class="d-inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="action_id" value="{{ action.id }}">
+                        <input type="hidden" name="status" value="due">
+                        <button type="submit" class="btn btn-warning btn-sm">Mark as Due</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

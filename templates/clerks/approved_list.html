@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center mb-4">Approved Applications</h2>
+    {% if approved_actions %}
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Application</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for action in approved_actions %}
+            <tr>
+                <td>{{ action.tc_application.id }}</td>
+                <td>{{ action.tc_application.name }}</td>
+                <td>{{ action.status }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No approved actions found.</p>
+    {% endif %}
+</div>
+{% endblock %}

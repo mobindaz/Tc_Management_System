@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Due List{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="text-center mb-4">Due List</h2>
+
+    <!-- Manually Added Due List -->
+    <div class="mb-5">
+        <h3>Due List</h3>
+        {% if manual_due_list %}
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>PRN</th>
+                        <th>Name</th>
+                        <th>Reason</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for application in manual_due_list %}
+                        <tr>
+                            <td>{{ application.prn }}</td>
+                            <td>{{ application.name }}</td>
+                            <td>{{ application.due_reason }}</td>
+                            <td>
+                                <!-- Approve Button -->
+                                <form method="POST" action="{% url 'approve_due_application' application.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-success">Approve</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="alert alert-info">No dues found.</div>
+        {% endif %}
+    </div>
+
+{% endblock %}

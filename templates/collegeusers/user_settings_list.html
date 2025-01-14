@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Manage User Settings</h1>
+
+<table>
+    <thead>
+        <tr>
+            <th>Username</th>
+            <th>Auto Approval Enabled</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for settings in users_with_settings %}
+        <tr>
+            <td>{{ settings.user.username }}</td>
+            <td>{{ settings.auto_approval_enabled }}</td>
+            <td>
+                <a href="{% url 'user_settings_update' settings.user.id %}">Edit</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
