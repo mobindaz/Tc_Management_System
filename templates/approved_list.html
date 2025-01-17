@@ -8,46 +8,120 @@
 </div>
 
 <div class="container mt-4">
-    <table class="table table-striped table-bordered">
-        <thead>
-            <tr>
-                <th>Application ID</th>
-                <th>Name</th>
-                <th>Department</th>
-                <th>PRN</th>
-                <th>Approval Date</th>
-                {% if role|lower == "hod" %}
-                    <th>Actions</th>
-                {% endif %}
-            </tr>
-        </thead>
-        <tbody>
-            {% for application in approved_applications %}
-                <tr>
-                    <td>{{ application.id }}</td>
-                    <td>{{ application.name }}</td>
-                    <td>{{ application.department }}</td>
-                    <td>{{ application.prn }}</td>
-                    <td>{{ application.updated_at|date:"d M Y, H:i" }}</td>
-                    {% if role|lower == "hod" %}
-                    <td>
-                        {% if application.forwarded_to_clerk %}
-                            <button class="btn btn-secondary btn-sm" disabled>Forwarded</button>
-                        {% else %}
-                            <form method="POST" action="{% url 'forward_to_clerk' application.id %}" class="d-inline">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-warning btn-sm">Forward to Clerk</button>
-                            </form>
-                        {% endif %}
-                    </td>
-                    {% endif %}
-                </tr>
-            {% empty %}
-                <tr>
-                    <td colspan="6" class="text-center">No approved applications found.</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    {% if role|lower == 'hod' %}
+        <!-- Template for HOD showing the bulk forward form -->
+        <form method="POST" action="{% url 'bulk_forward_to_clerk' %}" id="bulk-action-form">
+            {% csrf_token %}
+            <div class="mb-3">
+                <button type="submit" class="btn btn-warning" id="bulk-action-btn">Forward to Clerk</button>
+            </div>
+
+            <div class="mb-4">
+                <h3>Applications Not Forwarded to Clerk</h3>
+                <table class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="select-all"></th> <!-- Select All Checkbox -->
+                            <th>Application ID</th>
+                            <th>Name</th>
+                            <th>Department</th>
+                            <th>PRN</th>
+                            <th>Approval Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for application in approved_applications %}
+                            {% if not application.forwarded_to_clerk %}
+                                <tr>
+                                    <td><input type="checkbox" name="selected_applications" value="{{ application.id }}" class="select-checkbox"></td>
+                                    <td>{{ application.id }}</td>
+                                    <td>{{ application.name }}</td>
+                                    <td>{{ application.department }}</td>
+                                    <td>{{ application.prn }}</td>
+                                    <td>{{ application.updated_at|date:"d M Y, H:i" }}</td>
+                                </tr>
+                            {% endif %}
+                        {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center">No applications found in the list.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mb-4">
+                <h3>Applications Already Forwarded to Clerk</h3>
+                <table class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Application ID</th>
+                            <th>Name</th>
+                            <th>Department</th>
+                            <th>PRN</th>
+                            <th>Approval Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for application in approved_applications %}
+                            {% if application.forwarded_to_clerk %}
+                                <tr>
+                                    <td>{{ application.id }}</td>
+                                    <td>{{ application.name }}</td>
+                                    <td>{{ application.department }}</td>
+                                    <td>{{ application.prn }}</td>
+                                    <td>{{ application.updated_at|date:"d M Y, H:i" }}</td>
+                                </tr>
+                            {% endif %}
+                        {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center">No applications have been forwarded to the clerk.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </form>
+    {% else %}
+        <!-- Template for other roles showing only the list of approved applications -->
+        <div class="mb-4">
+            <h3>Approved Applications</h3>
+            <table class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>Application ID</th>
+                        <th>Name</th>
+                        <th>Department</th>
+                        <th>PRN</th>
+                        <th>Approval Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for application in approved_applications %}
+                        <tr>
+                            <td>{{ application.id }}</td>
+                            <td>{{ application.name }}</td>
+                            <td>{{ application.department }}</td>
+                            <td>{{ application.prn }}</td>
+                            <td>{{ application.updated_at|date:"d M Y, H:i" }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center">No applications found in the list.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
 </div>
+
+<script>
+    // Select/Deselect all checkboxes
+    document.getElementById('select-all').addEventListener('change', function() {
+        const checkboxes = document.querySelectorAll('.select-checkbox');
+        checkboxes.forEach(checkbox => checkbox.checked = this.checked);
+    });
+</script>
+
 {% endblock %}

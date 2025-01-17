@@ -1,6 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
-from django.contrib import messages
 from .models import ClerkAction
 from django.http import HttpResponseForbidden
 
@@ -22,42 +21,38 @@ def clerk_dashboard(request):
 
 @login_required
 def pending_list(request):
-    if request.user.role != 'clerks':  # Ensure the role is 'clerk', not 'clerks'
+    if request.user.role != 'clerks':  # Ensure the role is 'clerk'
         return HttpResponseForbidden("You are not authorized to access this page.")
 
-    # Fetch pending actions with 'forwarded_by' information
+    # Fetch pending actions and related data (e.g., forwarded_by)
     pending_actions = ClerkAction.objects.filter(
         clerk=request.user,
         status='pending'
-    ).select_related('tc_application__forwarded_by')  # Select the related 'forwarded_by' data
+    ).select_related(
+        'tc_application', 'tc_application__forwarded_by'
+    )
 
     if request.method == 'POST':
-        action_id = request.POST.get('action_id')
-        status = request.POST.get('status')
-        reason = request.POST.get('reason', '')  # Default to empty string if not provided
+        action_ids = request.POST.getlist('action_ids')  # Get the list of selected action ids
+        status = request.POST.get('status')  # Get the status for the bulk action
+        reason = request.POST.get('reason', '')  # Optional: Reason for rejection
 
         # Validate the status before updating the action
         if status not in ['approved', 'rejected', 'due']:
-            messages.error(request, "Invalid action status.")
             return render(request, 'clerks/pending_list.html', {'pending_actions': pending_actions})
 
-        # Fetch the ClerkAction instance
-        action = get_object_or_404(ClerkAction, id=action_id, clerk=request.user)
-
-        # Update the action status and reason
-        action.status = status
-        action.reason = reason
-        action.save()
-
-        # Display success message based on the action
-        messages.success(request, f"Application {status.capitalize()} successfully.")
+        # Bulk update of selected actions
+        if action_ids:
+            actions = ClerkAction.objects.filter(id__in=action_ids, clerk=request.user, status='pending')
+            for action in actions:
+                action.status = status
+                action.reason = reason
+                action.save()
 
     context = {
         'pending_actions': pending_actions,
     }
     return render(request, 'clerks/pending_list.html', context)
-
-
 
 
 @login_required
@@ -107,6 +102,4 @@ def due_list_clerk(request):
         if status in ['approved', 'rejected']:
             action.status = status
             action.save()
-            messages.success(request, f"Action {status.capitalize()} successfully.")
-
     return render(request, 'clerks/due_list.html', {'due_actions': due_actions})

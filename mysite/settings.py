@@ -131,7 +131,10 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+# settings.py
+TIME_ZONE = 'Asia/Kolkata'  # Set your local time zone
+USE_TZ = True  # Make sure timezone-aware datetimes are enabled
+
 
 USE_I18N = True
 

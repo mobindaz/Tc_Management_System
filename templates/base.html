@@ -176,21 +176,15 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{% url 'approve_tc_list' %}" class="nav-link {% if request.path == '/approve-tc-list/' %}active{% endif %}">
-                                <i class="nav-icon fas fa-check-circle"></i>
-                                <p>Approve TC</p>
+                            <a href="{% url 'approved_list' 'admin' %}" class="nav-link">
+                                <i class="nav-icon fas fa-check"></i>
+                                <p>Approved List</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{% url 'approved_tc_list' %}" class="nav-link {% if request.path == '/approved-tc-list/' %}active{% endif %}">
-                                <i class="nav-icon fas fa-check-double"></i>
-                                <p>Approved TC</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{% url 'pending_tc_list' %}" class="nav-link {% if request.path == '/pending-tc-list/' %}active{% endif %}">
-                                <i class="nav-icon fas fa-clock"></i>
-                                <p>Pending Applications</p>
+                            <a href="{% url 'pending_applications' 'admin' %}" class="nav-link">
+                                <i class="nav-icon fas fa-envelope"></i>
+                                <p>Pending List</p>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -200,13 +194,13 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{% url 'upload_due_list' %}" class="nav-link {% if request.path == '/due-list/' %}active{% endif %}">
+                            <a href="{% url 'upload_due_list'  %}" class="nav-link {% if request.path == '/due-list/' %}active{% endif %}">
                                 <i class="nav-icon fas fa-list"></i>
                                 <p>Upload Dues</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{% url 'admin_due_list' %}" class="nav-link">
+                            <a href="{% url 'due_list' %}" class="nav-link">
                                 <i class="nav-icon fas fa-list"></i>
                                 <p>Due List</p>
                             </a>

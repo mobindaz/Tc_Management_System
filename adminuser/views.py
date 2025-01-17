@@ -159,84 +159,6 @@ def admin_panel(request):
 
 
 @login_required
-def approve_tc_list(request):
-    if request.user.is_superuser or getattr(request.user, 'role', None) in ['admin']:
-        pending_applications = TCApplication.objects.filter(status='pending')
-        return render(request, 'adminuser/approve_tc.html', {'pending_applications': pending_applications})
-    else:
-        return HttpResponseForbidden("You are not authorized to access this page.")
-
-@login_required
-def approve_tc_action(request, application_id):
-    # Log the user information for debugging
-    print(f"User: {request.user.username}, Role: {getattr(request.user, 'role', 'None')}, Superuser: {request.user.is_superuser}")
-
-    # Check if the user is authorized to approve
-    if not request.user.is_superuser and getattr(request.user, 'role', None) != 'adminuser':  # Updated to match your role naming
-        print("Unauthorized access: User is not a superuser or admin.")
-        return HttpResponseForbidden("You are not authorized to perform this action.")
-
-    # Try to fetch the application
-    try:
-        application = TCApplication.objects.get(id=application_id)
-        print(f"Fetched Application ID: {application.id}, Current Status: {application.status}")
-
-        # Check if the application is already approved
-        if application.status == 'approved':
-            print(f"Application ID {application_id} is already approved.")
-            return HttpResponseForbidden("This application has already been approved.")
-
-        # Update the application's status to 'approved' and save the approver
-        application.status = 'approved'
-
-        # If 'approved_by' is a Many-to-Many relationship, use the `add()` method
-        application.approved_by.add(request.user)  # This will add the user to the Many-to-Many relationship
-
-        application.save()
-
-        print(f"Application ID {application.id} successfully approved by {request.user.username}.")
-        
-        # Redirect to the specified next page or default to pending applications
-        next_page = request.GET.get('next', 'pending_tc_list')
-        return redirect(next_page)
-
-    except TCApplication.DoesNotExist:
-        print(f"Application ID {application_id} does not exist.")
-        return HttpResponseForbidden("The application does not exist.")
-
-
-@login_required
-def reject_tc_action(request, application_id):
-    application = TCApplication.objects.get(id=application_id)
-    application.status = 'rejected'
-    application.save()
-    return redirect('approve_tc_list')
-
-
-@login_required
-def approved_tc_list(request):
-    if request.user.is_superuser or getattr(request.user, 'role', None) in ['admin']:
-        approved_applications = TCApplication.objects.filter(status='approved')
-        return render(request, 'adminuser/approved_tc.html', {'approved_applications': approved_applications})
-    else:
-        return HttpResponseForbidden("You are not authorized to access this page.")
-
-
-@login_required
-def pending_tc_list(request):
-    if request.user.is_superuser or getattr(request.user, 'role', None) in ['admin']:
-        pending_applications = TCApplication.objects.filter(status='pending')
-        rejected_applications = TCApplication.objects.filter(status='rejected')
-        return render(request, 'adminuser/pending_tc.html', {
-            'pending_applications': pending_applications,
-            'rejected_applications': rejected_applications
-        })
-    else:
-        return HttpResponseForbidden("You are not authorized to access this page.")
-    
-
-        
-@login_required
 def manage_users(request):
     # Ensure the user is authorized (superuser or admin role)
     if not (request.user.is_superuser or getattr(request.user, 'role', '') == 'admin'):
@@ -269,6 +191,8 @@ def manage_users(request):
             user.role = "Academics"
         elif getattr(user, 'role', '') == 'staff':
             user.role = "Staff"
+        elif getattr(user, 'role', '') == 'clerks':
+            user.role = "Clerks"
         elif getattr(user, 'role', '') == 'student':
             user.role = "Student"
         else:
@@ -313,58 +237,130 @@ def delete_user(request, user_id):
     context = {'user': user}
     return render(request, 'adminuser/delete_user.html', context)        
 
-@login_required
-def mark_as_due(request, application_id):
-    application = TCApplication.objects.get(id=application_id)
-    if request.method == 'POST':
-        due_reason = request.POST.get('due_reason', 'Not Completed')
-        try:
+
+# @login_required
+# def approve_tc_list(request):
+#     if request.user.is_superuser or getattr(request.user, 'role', None) in ['admin']:
+#         pending_applications = TCApplication.objects.filter(status='pending')
+#         return render(request, 'adminuser/approve_tc.html', {'pending_applications': pending_applications})
+#     else:
+#         return HttpResponseForbidden("You are not authorized to access this page.")
+
+# @login_required
+# def approve_tc_action(request, application_id):
+#     print(f"User: {request.user.username}, Role: {getattr(request.user, 'role', 'None')}, Superuser: {request.user.is_superuser}")
+
+
+#     if not request.user.is_superuser and getattr(request.user, 'role', None) != 'adminuser':
+#         print("Unauthorized access: User is not a superuser or admin.")
+#         return HttpResponseForbidden("You are not authorized to perform this action.")
+
+#     try:
+#         application = TCApplication.objects.get(id=application_id)
+#         print(f"Fetched Application ID: {application.id}, Current Status: {application.status}")
+
+#         if application.status == 'approved':
+#             print(f"Application ID {application_id} is already approved.")
+#             return HttpResponseForbidden("This application has already been approved.")
+
+
+#         application.status = 'approved'
+
+    
+#         application.approved_by.add(request.user)  
+#         application.save()
+
+#         print(f"Application ID {application.id} successfully approved by {request.user.username}.")
+        
+        
+#         next_page = request.GET.get('next', 'pending_tc_list')
+#         return redirect(next_page)
+
+#     except TCApplication.DoesNotExist:
+#         print(f"Application ID {application_id} does not exist.")
+#         return HttpResponseForbidden("The application does not exist.")
+
+
+# @login_required
+# def reject_tc_action(request, application_id):
+#     application = TCApplication.objects.get(id=application_id)
+#     application.status = 'rejected'
+#     application.save()
+#     return redirect('approve_tc_list')
+
+
+# @login_required
+# def approved_tc_list(request):
+#     if request.user.is_superuser or getattr(request.user, 'role', None) in ['admin']:
+#         approved_applications = TCApplication.objects.filter(status='approved')
+#         return render(request, 'adminuser/approved_tc.html', {'approved_applications': approved_applications})
+#     else:
+#         return HttpResponseForbidden("You are not authorized to access this page.")
+
+
+# @login_required
+# def pending_tc_list(request):
+#     if request.user.is_superuser or getattr(request.user, 'role', None) in ['admin']:
+#         pending_applications = TCApplication.objects.filter(status='pending')
+#         rejected_applications = TCApplication.objects.filter(status='rejected')
+#         return render(request, 'adminuser/pending_tc.html', {
+#             'pending_applications': pending_applications,
+#             'rejected_applications': rejected_applications
+#         })
+#     else:
+#         return HttpResponseForbidden("You are not authorized to access this page.")
+
+
+# @login_required
+# def mark_as_due(request, application_id):
+#     application = TCApplication.objects.get(id=application_id)
+#     if request.method == 'POST':
+#         due_reason = request.POST.get('due_reason', 'Not Completed')
+#         try:
             
-            application.status = 'due'
-            application.due_reason = due_reason
-            application.save()
-            return redirect('due_list')  # Redirect to the due list
-        except TCApplication.DoesNotExist:
-            return HttpResponseForbidden("Application does not exist.")
+#             application.status = 'due'
+#             application.due_reason = due_reason
+#             application.save()
+#             return redirect('due_list')  
+#         except TCApplication.DoesNotExist:
+#             return HttpResponseForbidden("Application does not exist.")
 
 
-    # For GET request, show the reason selection page
-    return render(request, 'adminuser/mark_as_due.html', {
-        'application': application,
-        'due_reasons': ['Fees Due', 'Library Fine', 'Hostel Dues', 'Other'],  # Add any reasons you need
-    })
+    
+#     return render(request, 'adminuser/mark_as_due.html', {
+#         'application': application,
+#         'due_reasons': ['Fees Due', 'Library Fine', 'Hostel Dues', 'Other'],  
+#     })
 
-@login_required
-def upload_due_list(request):
-    if request.method == "POST" and request.FILES.get('csv_file'):
-        csv_file = request.FILES['csv_file']
-        decoded_file = csv_file.read().decode('utf-8').splitlines()
-        reader = csv.DictReader(decoded_file)
+# @login_required
+# def upload_due_list(request):
+#     if request.method == "POST" and request.FILES.get('csv_file'):
+#         csv_file = request.FILES['csv_file']
+#         decoded_file = csv_file.read().decode('utf-8').splitlines()
+#         reader = csv.DictReader(decoded_file)
 
-        for row in reader:
-            name = row.get('Name')  # Fetch 'Name' column from CSV
-            department = row.get('Department')  # Fetch 'Department' column from CSV
-            prn = row.get('PRN')  # Fetch 'PRN' column from CSV
-            due_reason = row.get('Due Reason', 'No reason provided')  # Fetch 'Due Reason' column from CSV
+#         for row in reader:
+#             name = row.get('Name')  
+#             department = row.get('Department')  
+#             prn = row.get('PRN') 
+#             due_reason = row.get('Due Reason', 'No reason provided')  
+        
+#             UploadedDueList.objects.update_or_create(
+#                 prn=prn,
+#                 defaults={
+#                     'name': name,
+#                     'department': department,
+#                     'due_reason': due_reason,
+#                     'added_by': request.user,
+#                 },
+#             )
 
-            # Add to UploadedDueList
-            UploadedDueList.objects.update_or_create(
-                prn=prn,
-                defaults={
-                    'name': name,
-                    'department': department,
-                    'due_reason': due_reason,
-                    'added_by': request.user,
-                },
-            )
+#         return HttpResponseRedirect(reverse('upload_due_list'))
 
-        # Redirect to reload the page
-        return HttpResponseRedirect(reverse('upload_due_list'))
+    
+#     uploaded_due_list = UploadedDueList.objects.filter(added_by=request.user)
 
-    # Fetch uploaded dues only for the logged-in user
-    uploaded_due_list = UploadedDueList.objects.filter(added_by=request.user)
-
-    return render(request, 'upload_due_list.html', {'uploaded_due_list': uploaded_due_list})
+#     return render(request, 'upload_due_list.html', {'uploaded_due_list': uploaded_due_list})
 
 
 
@@ -374,10 +370,10 @@ def upload_due_list(request):
 def admin_due_list(request):
     user = request.user
 
-    # Query manually added due list
+ 
     manual_due_list = TCApplication.objects.filter(due_list=user, is_uploaded_due=False)
 
-    # Query uploaded due list
+
     uploaded_due_list = TCApplication.objects.filter(due_list=user, is_uploaded_due=True)
     due_applications = TCApplication.objects.filter(due_users=request.user)
 
@@ -393,4 +389,3 @@ def admin_due_list(request):
             'uploaded_due_list': uploaded_due_list,
         }
     )
-

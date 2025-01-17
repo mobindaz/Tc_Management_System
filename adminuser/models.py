@@ -24,7 +24,7 @@ class CustomUser(AbstractUser):
         ('CE', 'CIVIL ENGINEERING'),
         ('ME', 'MECHANICAL ENGINEERING'),
         ('IE', 'INSTRUMENTATION ENGINEERING'),
-        ('EE', 'ELECTRONICS ENGINEERING'),
+        ('ELE', 'ELECTRONICS ENGINEERING'),
         ('EEE', 'ELECTRICAL AND ELECTRONICS ENGINEERING'),
         ('nss', 'NSS'),
         ('ncc', 'NCC'),

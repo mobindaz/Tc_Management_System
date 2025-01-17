@@ -27,4 +27,6 @@ urlpatterns = [
     path('auto-approve/', views.auto_approve_view, name='auto_approve_view'),
     path('settings/auto-approval/', views.auto_approval_settings, name='auto_approval_settings'),
     path('forward-to-clerk/<int:application_id>/', views.forward_to_clerk, name='forward_to_clerk'),
+    path('bulk-action/', views.bulk_action, name='bulk_action'),
+    path('bulk-forward-to-clerk/', views.bulk_forward_to_clerk, name='bulk_forward_to_clerk'),
 ]

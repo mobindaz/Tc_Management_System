@@ -35,7 +35,7 @@ class TCApplication(models.Model):
     is_uploaded_due = models.BooleanField(default=False)
     forwarded_to_clerk = models.BooleanField(default=False) 
     
-    forwarded_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, related_name='forwarded_applications')
+    forwarded_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True,blank=True, related_name='forwarded_applications')
 
     # Relations for approval workflow
     due_users = models.ManyToManyField(
